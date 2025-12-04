@@ -9,7 +9,7 @@ inner_d = outer_d - 2*wall;   // = 19.5 mm
 inner_h = 30;
 
 // =============================
-// Chamfer parameters
+// CHAMFER parameters
 // =============================
 chamfer_depth = 2;      
 chamfer_extra = 2;      
@@ -119,5 +119,6 @@ translate([0,0,2]) {
         cylinder(d = inner_d, h = inner_h + 0.2);
     }
 }
+
 
 
