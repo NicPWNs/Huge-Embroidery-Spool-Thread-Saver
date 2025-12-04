@@ -38,16 +38,17 @@ jobs:
           new_version="v$major.$minor.$new_patch"
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
-      - name: Install OpenSCAD Nightly
+      - name: Download OpenSCAD Nightly AppImage
         run: |
-          sudo add-apt-repository ppa:openscad/releases -y
-          sudo apt-get update
-          sudo apt-get install -y openscad-nightly
-
-      - name: Generate STL
+          mkdir -p openscad
+          wget -O openscad/OpenSCAD-Nightly.AppImage \
+            https://files.openscad.org/snapshots/OpenSCAD-Nightly-x86_64.AppImage
+          chmod +x openscad/OpenSCAD-Nightly.AppImage
+      
+      - name: Generate STL with Nightly OpenSCAD
         run: |
           mkdir -p build
-          openscad-nightly \
+          ./openscad/OpenSCAD-Nightly.AppImage \
             -o build/"Huge Embroidery Spool Thread Saver.stl" \
             "Huge Embroidery Spool Thread Saver.scad"
 
