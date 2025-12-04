@@ -4,7 +4,7 @@ $fn = 120;
 // Dimensions for the upper hollow cylinder
 // =============================
 outer_d = 28;            // enlarged +1mm
-wall    = 3;
+wall    = 2;
 inner_d = outer_d - 2*wall;   // = 19.5 mm
 inner_h = 30;
 
@@ -119,6 +119,7 @@ translate([0,0,2]) {
         cylinder(d = inner_d, h = inner_h + 0.2);
     }
 }
+
 
 
 
