@@ -88,6 +88,6 @@ jobs:
           name: "Thread Saver ${{ needs.build.outputs.version }}"
           body: |
             Auto-generated STL from the latest commit.
-          files: build/"Huge Embroidery Spool Thread Saver.stl"
+          files: "build/Huge Embroidery Spool Thread Saver.stl"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
