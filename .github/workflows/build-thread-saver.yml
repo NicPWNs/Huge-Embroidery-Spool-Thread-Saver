@@ -63,6 +63,12 @@ jobs:
             -o build/"Huge Embroidery Spool Thread Saver.stl" \
             "Huge Embroidery Spool Thread Saver.scad"
 
+      - name: Upload STL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: thread-saver-stl
+          path: build/"Huge Embroidery Spool Thread Saver.stl"
+
   release:
     needs: build
     runs-on: ubuntu-latest
