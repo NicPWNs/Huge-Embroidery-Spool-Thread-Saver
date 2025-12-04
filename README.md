@@ -6,7 +6,7 @@
 
 ## Model
 
-- [Live on MakerWorld](https://makerworld.com/en/models/2066805-huge-embroidery-spool-thread-saver) 🧊
+- [Live on MakerWorld](https://makerworld.com/en/models/2066805-huge-embroidery-spool-thread-saver) 🎍
 - [Preview the Model](https://github.com/NicPWNs/Huge-Embroidery-Spool-Thread-Saver/blob/main/Huge%20Embroidery%20Spool%20Thread%20Saver.stl) 🔎
 
 ## Description
