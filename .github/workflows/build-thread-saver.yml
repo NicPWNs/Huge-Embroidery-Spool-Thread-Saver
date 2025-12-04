@@ -42,13 +42,6 @@ jobs:
         run: |
           mkdir -p openscad
           wget -O openscad/OpenSCAD-Nightly.AppImage \
-            https://files.openscad.org/snapshots/OpenSCAD-Nightly-x86_64.AppImage
-          chmod +x openscad/OpenSCAD-Nightly.AppImage
-      
-      - name: Download OpenSCAD Nightly AppImage
-        run: |
-          mkdir -p openscad
-          wget -O openscad/OpenSCAD-Nightly.AppImage \
             https://files.openscad.org/snapshots/OpenSCAD-2025.12.02.ai29699-x86_64.AppImage
           chmod +x openscad/OpenSCAD-Nightly.AppImage
       
