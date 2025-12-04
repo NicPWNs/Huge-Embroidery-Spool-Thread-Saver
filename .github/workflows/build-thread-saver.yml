@@ -1,0 +1,79 @@
+name: Build and Release Thread Saver
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "Huge Embroidery Spool Thread Saver.scad"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.bump_version.outputs.new_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # IMPORTANT so we can read tags
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest_tag=$tag" >> $GITHUB_OUTPUT
+
+      - name: Bump semantic version (patch)
+        id: bump_version
+        run: |
+          old=${{ steps.get_tag.outputs.latest_tag }}
+          old=${old#v}  # remove v
+          IFS='.' read -r major minor patch <<< "$old"
+          new_patch=$((patch + 1))
+          new_version="v$major.$minor.$new_patch"
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Install OpenSCAD
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openscad
+
+      - name: Generate STL
+        run: |
+          mkdir -p build
+          openscad \
+            -o build/"Huge Embroidery Spool Thread Saver.stl" \
+            "Huge Embroidery Spool Thread Saver.scad"
+
+      - name: Upload STL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: thread-saver-stl
+          path: build/"Huge Embroidery Spool Thread Saver.stl"
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download STL artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: thread-saver-stl
+          path: build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build.outputs.version }}
+          name: "Thread Saver ${{ needs.build.outputs.version }}"
+          body: |
+            Auto-generated STL from the latest commit.
+          files: build/"Huge Embroidery Spool Thread Saver.stl"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
