@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - "Huge Embroidery Spool Thread Saver.scad"
+  workflow_dispatch:
 
 permissions:
   contents: write
