@@ -38,15 +38,16 @@ jobs:
           new_version="v$major.$minor.$new_patch"
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
-      - name: Install OpenSCAD
+      - name: Install OpenSCAD Nightly
         run: |
+          sudo add-apt-repository ppa:openscad/releases -y
           sudo apt-get update
-          sudo apt-get install -y openscad
+          sudo apt-get install -y openscad-nightly
 
       - name: Generate STL
         run: |
           mkdir -p build
-          openscad \
+          openscad-nightly \
             -o build/"Huge Embroidery Spool Thread Saver.stl" \
             "Huge Embroidery Spool Thread Saver.scad"
 
