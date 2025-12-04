@@ -37,7 +37,18 @@ jobs:
           new_patch=$((patch + 1))
           new_version="v$major.$minor.$new_patch"
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
-
+  
+      - name: Install OpenSCAD AppImage dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libegl1 \
+            libgl1 \
+            libopengl0 \
+            libxrender1 \
+            libxkbcommon0 \
+            libglu1-mesa
+      
       - name: Download OpenSCAD Nightly AppImage
         run: |
           mkdir -p openscad
