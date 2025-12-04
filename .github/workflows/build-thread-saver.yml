@@ -1,4 +1,4 @@
-name: Build and Release Thread Saver
+name: Build & Release Thread Saver
 
 on:
   push:
@@ -8,37 +8,42 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write  # required for pushing commits & creating releases
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     outputs:
-      version: ${{ steps.bump_version.outputs.new_version }}
+      version: ${{ steps.bump.outputs.new_version }}
 
     steps:
+
+      # --- CHECKOUT ---
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # IMPORTANT so we can read tags
+          fetch-depth: 0  # ensure tags exist locally
 
-      - name: Get latest tag
-        id: get_tag
+      # --- GET CURRENT VERSION TAG ---
+      - name: Get latest release tag
+        id: gettag
         run: |
           tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "latest_tag=$tag" >> $GITHUB_OUTPUT
+          echo "latest=$tag" >> $GITHUB_OUTPUT
 
-      - name: Bump semantic version (patch)
-        id: bump_version
+      # --- SEMVER PATCH BUMP ---
+      - name: Auto-increment patch version
+        id: bump
         run: |
-          old=${{ steps.get_tag.outputs.latest_tag }}
-          old=${old#v}  # remove v
-          IFS='.' read -r major minor patch <<< "$old"
-          new_patch=$((patch + 1))
-          new_version="v$major.$minor.$new_patch"
-          echo "new_version=$new_version" >> $GITHUB_OUTPUT
-  
+          old="${{ steps.gettag.outputs.latest }}"
+          old="${old#v}"  # remove leading v
+          IFS='.' read -r MAJ MIN PAT <<< "$old"
+          PAT=$((PAT + 1))
+          new="v$MAJ.$MIN.$PAT"
+          echo "new_version=$new" >> $GITHUB_OUTPUT
+
+      # --- INSTALL OPENSCAD DEPS ---
       - name: Install OpenSCAD AppImage dependencies
         run: |
           sudo apt-get update
@@ -49,45 +54,63 @@ jobs:
             libxrender1 \
             libxkbcommon0 \
             libglu1-mesa
-      
+
+      # --- DOWNLOAD NIGHTLY OPENSCAD ---
       - name: Download OpenSCAD Nightly AppImage
         run: |
           mkdir -p openscad
           wget -O openscad/OpenSCAD-Nightly.AppImage \
             https://files.openscad.org/snapshots/OpenSCAD-2025.12.02.ai29699-x86_64.AppImage
           chmod +x openscad/OpenSCAD-Nightly.AppImage
-      
-      - name: Generate STL with Nightly OpenSCAD
+
+      # --- GENERATE STL IN REPO ROOT ---
+      - name: Generate STL from SCAD
         run: |
-          mkdir -p build
           ./openscad/OpenSCAD-Nightly.AppImage \
-            -o "build/Huge Embroidery Spool Thread Saver.stl" \
+            -o "Huge Embroidery Spool Thread Saver.stl" \
             "Huge Embroidery Spool Thread Saver.scad"
 
+      # --- COMMIT STL BACK TO MAIN ---
+      - name: Commit STL back to repository
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add "Huge Embroidery Spool Thread Saver.stl"
+          if git diff --cached --quiet; then
+            echo "No STL changes — nothing to commit."
+          else
+            git commit -m "Auto-update STL for version ${{ steps.bump.outputs.new_version }}"
+            git push
+          fi
+
+      # --- UPLOAD ARTIFACT (optional but useful) ---
       - name: Upload STL artifact
         uses: actions/upload-artifact@v4
         with:
           name: thread-saver-stl
-          path: build/Huge Embroidery Spool Thread Saver.stl
+          path: "Huge Embroidery Spool Thread Saver.stl"
 
   release:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
+      # --- DOWNLOAD STL ---
       - name: Download STL artifact
         uses: actions/download-artifact@v4
         with:
           name: thread-saver-stl
           path: build
 
+      # --- CREATE RELEASE ---
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.build.outputs.version }}
           name: "Thread Saver ${{ needs.build.outputs.version }}"
           body: |
-            Auto-generated STL from the latest commit.
+            Auto-generated STL and release from updated SCAD model.
           files: "build/Huge Embroidery Spool Thread Saver.stl"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
